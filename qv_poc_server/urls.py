@@ -24,6 +24,7 @@ urlpatterns = [
     path('', views.BaseView.as_view(), name="qv_poc_server"),
     path('api/raven/', include('raven.urls')),
     path('api/ais/', include('ais.urls')),
+    path('api/deepinspector/', include('deepinspector.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
