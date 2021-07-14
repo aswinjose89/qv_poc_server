@@ -5,6 +5,8 @@ from braces.views import JSONResponseMixin
 import json
 from django.conf import settings
 import numpy as np
+from os import listdir
+from os.path import isfile, join
 
 # Create your views here.
 
@@ -52,12 +54,26 @@ class RlAssistPredictedView(JSONResponseMixin, View):
         }
         return 'success', kwargs
 
-    def get_api_response(self, data):
+    def get_files(self, path):
+        full_path = '{}/{}'.format(settings.MEDIA_ROOT, path)
+        files = [f for f in listdir(full_path) if isfile(join(full_path, f))]
+        return files
 
-        full_path = '{}/{}'.format(settings.MEDIA_ROOT, "rlassist/evaluated_program_details.npy")
-        rlassist_program_dtls= np.load(full_path, allow_pickle=True)
-        
+    def get_file_path(self, path):
+        full_path = '{}/{}'.format(settings.MEDIA_ROOT, path)
+        files = [dict(path=join(settings.MEDIA_URL, path, f), file=f) for f in listdir(full_path) if isfile(join(full_path, f))]
+        return files
+
+    def get_api_response(self, data):
+        files= self.get_files('rlassist/')
+        all_program_dtls= {}
+        for file in files:
+            full_path = '{}/{}/{}'.format(settings.MEDIA_ROOT, "rlassist", file)
+            rlassist_program_dtls= np.load(full_path, allow_pickle=True)
+            program_dtls= rlassist_program_dtls.tolist()
+            all_program_dtls.update(program_dtls)
+
         kwargs = {
-            'program_dtls': rlassist_program_dtls.tolist()
+            'program_dtls': all_program_dtls
         }
         return 'success', kwargs
